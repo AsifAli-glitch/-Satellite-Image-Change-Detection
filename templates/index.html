@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Image Change Detection</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 650px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            border: 1px solid var(--border);
+        }
+        .badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #0f172a;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .alert {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
+        }
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 600px) {
+            .upload-grid { grid-template-columns: 1fr; }
+        }
+        .upload-card {
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.2s ease;
+        }
+        .upload-card:hover {
+            border-color: var(--primary);
+            background: #f0f7ff;
+        }
+        .upload-card label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .upload-card span.hint {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .upload-card input[type="file"] {
+            width: 100%;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        button.btn-submit {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+        button.btn-submit:hover {
+            background: var(--primary-hover);
+        }
+        .footer-note {
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <span class="badge">DIP Project</span>
+    <h1>Satellite Image Change Detection</h1>
+    <p class="subtitle">Upload two satellite images of the same area taken at different times to detect land-cover or urban changes using Digital Image Processing.</p>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="alert">
+            {% for msg in messages %}
+                <div>{{ msg }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="upload-grid">
+            <div class="upload-card">
+                <label for="image1">🕒 Before (Date 1)</label>
+                <span class="hint">Earlier reference image</span>
+                <input type="file" name="image1" id="image1" accept=".jpg,.jpeg,.png,.tif,.tiff" required>
+            </div>
+            <div class="upload-card">
+                <label for="image2">🕒 After (Date 2)</label>
+                <span class="hint">Later comparison image</span>
+                <input type="file" name="image2" id="image2" accept=".jpg,.jpeg,.png,.tif,.tiff" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">🚀 Run Change Detection Pipeline</button>
+    </form>
+
+    <div class="footer-note">
+        Processing Pipeline: Registration (ECC) ➔ Differencing ➔ Otsu Thresholding ➔ Morphological Cleaning
+    </div>
+</div>
+
+</body>
+</html>

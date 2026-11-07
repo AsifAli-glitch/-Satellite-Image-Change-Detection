@@ -1,0 +1,197 @@
+Satellite Image Change Detection | DIP Semester Project  •  Page PROJECT PROPOSAL
+Satellite Image Change Detection
+Using Digital Image Processing
+Department of Artificial Intelligence
+Aror University of Art, Architecture, Design & Heritage, Sukkur, Pakistan
+Course: Digital Image Processing (DIP)
+Student: Asif Ali
+Project Type: Semester Project
+Proposed Study Area: An urban area in Sindh, Pakistan (to be finalized)
+Supervisor: To be assigned/confirmed
+Programming Language: Python
+Satellite Image Change Detection | DIP Semester Project  •  Page 1. Abstract
+Satellite imagery provides valuable information for monitoring changes occurring on the Earth’s surface over time. 
+Identifying urban changes can support urban planning, infrastructure monitoring, and environmental 
+management. However, manually comparing satellite images captured on different dates can be time-consuming 
+and may make subtle changes difficult to identify.
+This project proposes the development of a satellite image change detection system using Digital Image 
+Processing (DIP) techniques. The system will compare two satellite images of the same geographical area acquired 
+on different dates to identify and visualize potential surface changes. The proposed workflow will include image 
+acquisition, preprocessing, image registration where necessary, image differencing, thresholding, and 
+morphological operations. The resulting change map will highlight regions where significant image differences 
+occur.
+Python, OpenCV, NumPy, and Matplotlib will be used to implement and visualize the processing pipeline. The 
+system will be evaluated using suitable quantitative metrics when reliable reference labels are available. Particular 
+attention will be given to image alignment, differences in illumination, and other factors that can produce false 
+detections. The expected outcome is a working prototype that demonstrates the application of fundamental 
+image-processing techniques to satellite-based urban change monitoring.
+2. Introduction
+Remote sensing enables the observation of geographical areas through satellite imagery collected at different 
+times. Comparing these images can reveal changes associated with urban development, construction, land-cover 
+modification, vegetation loss, and other surface processes.
+Satellite image change detection involves identifying meaningful changes between images of the same area 
+acquired at different times. Traditional image-processing methods, including image differencing and thresholding, 
+provide an understandable starting point for this task. Their performance, however, can be affected by image 
+misalignment, atmospheric conditions, seasonal variations, and differences in illumination.
+This project will investigate how a sequence of Digital Image Processing techniques can be combined into a 
+practical system for detecting and visualizing potential changes in an urban area in Sindh, Pakistan.
+3. Problem Statement
+Manual identification of changes between multi-temporal satellite images requires time and careful visual 
+inspection. A simple automated comparison can help identify areas that deserve further examination. However, 
+direct pixel-by-pixel comparison may incorrectly classify changes caused by misalignment, shadows, vegetation 
+variation, or differences in image acquisition conditions as actual surface changes.
+Therefore, the problem addressed by this project is to develop and evaluate a systematic image-processing 
+pipeline that compares satellite images captured on different dates and generates an interpretable change map 
+while investigating the factors that affect its reliability.
+4. Aim
+To design and implement a satellite image change detection system using Digital Image Processing techniques for 
+identifying and visualizing potential changes in an urban area over time.
+Satellite Image Change Detection | DIP Semester Project  •  Page 5. Objectives
+1. Obtain suitable satellite images of the same geographical area from two different dates.
+2. Inspect image quality, resolution, acquisition dates, and spatial alignment.
+3. Apply preprocessing techniques to prepare images for comparison.
+4. Perform image registration or alignment correction where required.
+5. Implement image differencing to generate a change-intensity image.
+6. Apply thresholding to produce a binary change map.
+7. Use morphological operations to reduce isolated noise and improve the spatial consistency of detected 
+regions.
+8. Visualize the original images, difference image, and final change map.
+9. Compare selected processing configurations using appropriate evaluation metrics where reference data are 
+available.
+10. Document the system’s limitations and identify opportunities for future improvement.
+6. Scope of the Project
+The initial implementation will focus on urban change detection using two satellite images of the same area.
+•Reading and displaying satellite images.
+•Checking image dimensions and spatial alignment.
+•Basic preprocessing and intensity normalization where appropriate.
+•Image registration if the images are not sufficiently aligned.
+•Absolute image differencing.
+•Threshold-based change extraction.
+•Morphological opening and closing, where beneficial.
+•Visualization of potential changed regions.
+•Quantitative evaluation when suitable reference information is available.
+The first version will focus on conventional image-processing methods rather than deep learning. Additional 
+methods may be considered after a reliable baseline has been implemented.
+The system will identify differences in image appearance; it will not automatically establish that every detected 
+region represents a new building or another specific type of real-world change.
+7. Proposed Methodology
+Stage 1: Satellite Image Acquisition
+Two suitable images will be obtained from a freely accessible source, preferably the Copernicus Sentinel-2 
+mission. The images should cover the same geographical area and have suitable spatial resolution, acquisition 
+dates, and cloud conditions. Sentinel-2 provides multispectral imagery, including bands with 10-metre spatial 
+resolution, and its data are available free of charge through the Copernicus Data Space Ecosystem.
+Stage 2: Image Inspection and Preprocessing
+The images will be checked for dimensions, resolution, cloud contamination, and suitability for comparison. 
+Corresponding bands or comparable visual representations will be selected. Appropriate preprocessing will be 
+applied without removing meaningful differences that the system is intended to detect.
+Satellite Image Change Detection | DIP Semester Project  •  Page Stage 3: Image Registration
+If the images are spatially misaligned, an image registration technique will be applied to align corresponding 
+geographical features. Registration quality will be checked visually and, where possible, quantitatively. This stage 
+is important because even small alignment errors can create false change regions around edges.
+Stage 4: Image Differencing
+The aligned images will be compared using an absolute difference operation. For corresponding pixel locations, 
+the difference can be expressed as D(x,y) = |I₂(x,y) − I₁(x,y)|, where I₁ and I₂ represent the earlier and later images, 
+and D represents the difference image. For multiband images, the implementation will define an appropriate 
+band-combination or difference measure.
+Stage 5: Thresholding
+A threshold will be applied to the difference image to separate pixels with relatively small differences from those 
+with larger differences. The threshold may be selected experimentally or using an appropriate automatic method, 
+depending on the characteristics of the data. The output will be a preliminary binary change map, and the selected 
+threshold and its effect will be documented.
+Stage 6: Morphological Processing
+Morphological operations, such as opening and closing, will be tested to reduce isolated detections and improve 
+the continuity of candidate change regions. These operations will be retained only when they improve the output; 
+excessive processing could remove small genuine changes or merge unrelated regions.
+Stage 7: Change Map Generation
+The system will display the earlier image, later image, difference image, and final change map. Detected regions 
+may also be overlaid on the satellite imagery to make the results easier to interpret.
+Stage 8: Evaluation and Comparison
+The output will be assessed through visual inspection and, if suitable reference labels or manually verified regions 
+can be obtained, quantitative evaluation. Potential metrics include precision, recall, F1-score, and intersection 
+over union (IoU). Selected configurations, such as different thresholds or morphological settings, will be 
+compared. No accuracy value will be assumed in advance.
+8. System Workflow
+Satellite Image — Date 1  +  Satellite Image — Date 2
+↓
+Image Inspection and Preprocessing
+↓
+Image Registration, if Required
+↓
+Image Differencing
+↓
+Thresholding
+↓
+Satellite Image Change Detection | DIP Semester Project  •  Page Morphological Processing
+↓
+Change Map Generation
+↓
+Visual and Quantitative Evaluation
+9. Tools and Technologies
+Tool / Technology Purpose
+Python Main programming language
+OpenCVImage processing, alignment, and morphological 
+operations
+NumPy Numerical operations and pixel-wise comparisons
+Matplotlib Displaying images and results
+Jupyter Notebook or VS Code Development and experimentation
+Copernicus Sentinel-2 data Potential source of satellite imagery
+10. Expected Outcomes
+11. A working Python prototype for comparing two satellite images.
+12. A documented image-processing pipeline.
+13. A difference image showing pixel-level variation.
+14. A binary change map highlighting candidate changed regions.
+15. A visual comparison of input images and processing results.
+16. An evaluation report documenting methods, parameters, observations, and limitations.
+17. A final project report and presentation demonstrating the implementation.
+These are intended outcomes, not claims that the system has already achieved a particular accuracy or level of 
+performance.
+11. Evaluation Plan
+Evaluation will depend on the availability and quality of reference data. Where a reliable reference change mask 
+can be prepared, the following metrics will be considered:
+•Precision: the proportion of detected change pixels that are correct.
+•Recall: the proportion of reference change pixels successfully detected.
+•F1-score: the harmonic mean of precision and recall.
+•Intersection over Union (IoU): the overlap between the detected change region and the reference change 
+region divided by their union.
+Visual inspection alone will not be presented as proof of high accuracy. If reference labels cannot be obtained, the 
+project will report qualitative observations and clearly state that quantitative accuracy could not be reliably 
+established.
+Satellite Image Change Detection | DIP Semester Project  •  Page 12. Limitations and Challenges
+•Differences in image alignment between dates.
+•Clouds, shadows, haze, and atmospheric variation.
+•Seasonal changes in vegetation and surface moisture.
+•The choice of threshold for distinguishing change from noise.
+•Difficulty obtaining reliable reference labels for evaluation.
+•The spatial-resolution limits of the selected satellite imagery.
+These challenges will be documented and addressed where feasible. Apparent image differences will not 
+automatically be interpreted as confirmed urban development.
+13. Proposed Timeline
+Week Planned activity
+1 Finalize the study area and acquire suitable satellite 
+images
+2 Inspect data and implement preprocessing
+3 Align images and implement image differencing
+4 Implement thresholding and morphological operations
+5 Generate visual outputs and test alternative 
+configurations
+6 Evaluate results and document limitations
+7 Prepare the final report, presentation, and 
+demonstration
+The schedule is provisional and can be adjusted to the course deadline and the time required to obtain suitable 
+data.
+14. Conclusion
+This project proposes a practical application of Digital Image Processing for satellite-based urban change 
+detection. By combining preprocessing, image registration where necessary, image differencing, thresholding, and 
+morphological operations, the system will generate visual maps of potential changes between two dates.
+The project is designed to demonstrate fundamental DIP concepts through a real-world application while 
+maintaining a clear distinction between detected pixel differences and verified real-world changes. The final 
+assessment will be based on the implementation, documented experiments, and the quality of available 
+evaluation evidence.
+15. Preliminary References
+1. Cheng, G., Huang, Y., Li, X., Lyu, S., Xu, Z., Zhao, H., Zhao, Q., & Xiang, S. (2024). Change Detection Methods for 
+Remote Sensing in the Last Decade: A Comprehensive Review. Remote Sensing, 16(13), 2355. 
+https://doi.org/10.3390/rs16132355
+Satellite Image Change Detection | DIP Semester Project  •  Page 2. Copernicus Data Space Ecosystem. Sentinel-2 Mission and Data Access. https://dataspace.copernicus.eu/data-
+collections/copernicus-sentinel-missions/sentinel-2
+These references provide an initial foundation. A more detailed literature review will be prepared if the project is 
+later developed into a research paper.
