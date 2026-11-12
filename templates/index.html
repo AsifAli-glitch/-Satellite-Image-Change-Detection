@@ -3,171 +3,1717 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Satellite Image Change Detection</title>
+    <title>Satellite Image Change Detection | Interactive DIP Dashboard</title>
+    <!-- Chart.js for Difference Histogram -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
+            /* Primary Signature Palette: #5D7B6F (Deep Sage) & #EAE7D6 (Warm Cream) */
+            --sage-primary: #5D7B6F;
+            --sage-dark: #465E54;
+            --sage-hover: #4F6A5F;
+            --sage-light: #7E9F92;
+            --sage-tint: #D6E3DD;
+            --cream-bg: #EAE7D6;
+            --cream-card: #F4F2E7;
+            --cream-card-hover: #ECE9DC;
+            --cream-input: #FAF8F2;
+            --border-cream: #D3CEB8;
+            --border-cream-dark: #B5AFA0;
+
+            --bg-main: #EAE7D6;
+            --bg-card: #F4F2E7;
+            --bg-card-hover: #ECE9DC;
+            --border: #D3CEB8;
+            --border-highlight: #5D7B6F;
+            --text-main: #202D27;
+            --text-muted: #5D7B6F;
+            --accent-blue: #5D7B6F;
+            --accent-primary: #5D7B6F;
+            --accent-green: #4D7359;
+            --accent-red: #C04A3A;
+            --accent-amber: #B08238;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Top Header */
+        header {
+            background: #5D7B6F;
+            border-bottom: 2px solid #465E54;
+            padding: 12px 24px;
+            display: flex;
             align-items: center;
-            padding: 40px 20px;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 12px rgba(70, 94, 84, 0.2);
         }
-        .container {
-            max-width: 650px;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 35px;
-            border-radius: 14px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: #EAE7D6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5D7B6F;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .brand-titles h1 {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: #EAE7D6;
+        }
+
+        .brand-titles p {
+            font-size: 11px;
+            color: rgba(234, 231, 214, 0.88);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 7px;
             border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            color: var(--text-main);
+            background: var(--bg-card);
         }
-        .badge {
-            display: inline-block;
-            background: #dbeafe;
-            color: #1e40af;
+
+        header .btn {
+            background: #EAE7D6;
+            color: #202D27;
+            border: 1px solid #D3CEB8;
+        }
+
+        header .btn:hover {
+            background: #FFFFFF;
+            color: #5D7B6F;
+            border-color: #EAE7D6;
+        }
+
+        header .btn-primary {
+            background: #465E54;
+            color: #EAE7D6;
+            border: 1px solid #364941;
+        }
+
+        header .btn-primary:hover {
+            background: #364941;
+            color: #FFFFFF;
+        }
+
+        header .btn-success {
+            background: #3B544B;
+            color: #EAE7D6;
+            border: 1px solid #2F443D;
+        }
+
+        header .btn-success:hover {
+            background: #2F443D;
+            color: #FFFFFF;
+        }
+
+        .btn-outline {
+            border-color: var(--border);
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-highlight);
+            color: var(--text-main);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: #EAE7D6;
+            border-color: var(--sage-dark);
+        }
+
+        .btn-primary:hover {
+            background: var(--sage-dark);
+            color: #FFFFFF;
+        }
+
+        .btn-success {
+            background: #465E54;
+            color: #EAE7D6;
+            border-color: #364941;
+        }
+
+        .btn-success:hover {
+            background: #364941;
+            color: #FFFFFF;
+        }
+
+        .btn-sm {
+            padding: 4px 9px;
+            font-size: 11px;
+        }
+
+        /* Layout Grid */
+        .app-body {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 63px);
+        }
+
+        @media (max-width: 1024px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+            .header-actions {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 4px;
+            }
+            .header-actions .btn {
+                white-space: nowrap;
+            }
+            .app-body {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+            .main-content {
+                order: 1;
+                padding: 12px;
+            }
+            .sidebar {
+                order: 2;
+                border-right: none;
+                border-top: 1px solid var(--border);
+                padding: 16px;
+            }
+            .view-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .tab-group {
+                overflow-x: auto;
+            }
+            .tab-btn {
+                white-space: nowrap;
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .control-group {
+            background: #EAE7D6;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 12px;
             font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 999px;
-            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .val-badge {
+            background: #5D7B6F;
+            color: #EAE7D6;
+            font-family: monospace;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* Form Inputs */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #D3CEB8;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #5D7B6F;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(93, 123, 111, 0.5);
+            border: 2px solid #EAE7D6;
+        }
+
+        select, input[type="text"] {
+            background: #FAF8F2;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(93, 123, 111, 0.2);
+        }
+
+        /* Toggle Switches */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-switch {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #D3CEB8;
+            transition: .2s;
+            border-radius: 20px;
+        }
+
+        .slider-switch:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #FAF8F2;
+            transition: .2s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-switch {
+            background-color: #5D7B6F;
+        }
+
+        input:checked + .slider-switch:before {
+            transform: translateX(16px);
+            background-color: #EAE7D6;
+        }
+
+        /* Radio Pill Groups */
+        .radio-pill-group {
+            display: flex;
+            background: #D3CEB8;
+            border: 1px solid #C4BEA7;
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .radio-pill {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #4A5B53;
+            transition: all 0.15s ease;
+        }
+
+        .radio-pill.active {
+            background: #5D7B6F;
+            color: #EAE7D6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border: 1px solid #465E54;
+        }
+
+        /* Presets list */
+        .presets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .preset-chip {
+            background: #FAF8F2;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            color: #384A42;
+        }
+
+        .preset-chip:hover {
+            border-color: #5D7B6F;
+            color: #202D27;
+            background: #ECE9DC;
+        }
+
+        /* Main Workspace Area */
+        .main-content {
+            background: var(--bg-main);
+            overflow-y: auto;
+            padding: 18px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Top View Tabs & Status */
+        .view-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 6px 12px;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #5D7B6F;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: #202D27;
+            background: rgba(93, 123, 111, 0.15);
+        }
+
+        .tab-btn.active {
+            background: #5D7B6F;
+            color: #EAE7D6;
+        }
+
+        .pipeline-status {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #5D7B6F;
+            box-shadow: 0 0 8px rgba(93, 123, 111, 0.6);
+        }
+
+        /* Analytics Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(93, 123, 111, 0.08);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent, #5D7B6F);
+        }
+
+        .metric-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        h1 {
-            font-size: 24px;
+
+        .metric-value {
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 8px;
-            color: #0f172a;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
         }
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 25px;
-            line-height: 1.5;
+
+        .metric-sub {
+            font-size: 11px;
+            color: #6C7D75;
         }
-        .alert {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 12px 16px;
+
+        /* Visualizer Container */
+        .viewer-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 440px;
+            position: relative;
+            box-shadow: 0 1px 4px rgba(93, 123, 111, 0.08);
+        }
+
+        /* 4-Panel Grid View */
+        .grid-view-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .grid-view-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .grid-panel {
+            background: #FAF8F2;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 20px;
-            border: 1px solid #fecaca;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        .upload-grid {
+
+        .grid-panel-header {
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(93, 123, 111, 0.12);
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .grid-panel img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            aspect-ratio: 1/1;
+            background: #202D27;
+        }
+
+        /* Split-Curtain Slider */
+        .split-curtain-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            aspect-ratio: 1/1;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            user-select: none;
+            cursor: ew-resize;
+            background: #202D27;
+            touch-action: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .split-image-before, .split-image-after {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .split-image-after {
+            clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+        }
+
+        .split-divider {
+            position: absolute;
+            top: 0; bottom: 0;
+            left: 50%;
+            width: 3px;
+            background: #EAE7D6;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 4px #5D7B6F;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .split-handle {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 34px; height: 34px;
+            background: #5D7B6F;
+            color: #EAE7D6;
+            border: 2px solid #EAE7D6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+
+        .split-label {
+            position: absolute;
+            bottom: 12px;
+            padding: 4px 10px;
+            background: rgba(32, 45, 39, 0.82);
+            color: #EAE7D6;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 15;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(234, 231, 214, 0.2);
+        }
+
+        .split-label-left { left: 12px; }
+        .split-label-right { right: 12px; }
+
+        /* Single Overlay / Blink View */
+        .single-view-container {
+            max-width: 650px;
+            width: 100%;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #202D27;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .single-view-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            aspect-ratio: 1/1;
+        }
+
+        .blink-indicator {
+            position: absolute;
+            top: 12px; left: 12px;
+            padding: 4px 10px;
+            background: rgba(32, 45, 39, 0.85);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #EAE7D6;
+            border: 1px solid var(--border);
+        }
+
+        /* Histogram Section */
+        .histogram-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 1px 4px rgba(93, 123, 111, 0.08);
+        }
+
+        .hist-canvas-wrap {
+            height: 160px;
+            position: relative;
+            width: 100%;
+        }
+
+        /* Upload Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(32, 45, 39, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 580px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+            color: var(--text-main);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .upload-dropzone-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 12px;
         }
-        @media (max-width: 600px) {
-            .upload-grid { grid-template-columns: 1fr; }
-        }
-        .upload-card {
-            border: 2px dashed var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            background: #fafafa;
-            transition: all 0.2s ease;
-        }
-        .upload-card:hover {
-            border-color: var(--primary);
-            background: #f0f7ff;
-        }
-        .upload-card label {
-            display: block;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-        .upload-card span.hint {
-            display: block;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-        }
-        .upload-card input[type="file"] {
-            width: 100%;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        button.btn-submit {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 20px;
+
+        .dropzone {
+            border: 2px dashed var(--border-cream-dark);
             border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-        }
-        button.btn-submit:hover {
-            background: var(--primary-hover);
-        }
-        .footer-note {
-            margin-top: 24px;
-            font-size: 12px;
-            color: var(--text-muted);
+            padding: 20px 10px;
             text-align: center;
+            background: #FAF8F2;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        .dropzone:hover {
+            border-color: #5D7B6F;
+            background: #ECE9DC;
+        }
+
+        .dropzone input {
+            display: none;
+        }
+
+        .dropzone-preview {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            display: none;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(93, 123, 111, 0.3);
+            border-radius: 50%;
+            border-top-color: #5D7B6F;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <span class="badge">DIP Project</span>
-    <h1>Satellite Image Change Detection</h1>
-    <p class="subtitle">Upload two satellite images of the same area taken at different times to detect land-cover or urban changes using Digital Image Processing.</p>
-
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <div class="alert">
-            {% for msg in messages %}
-                <div>{{ msg }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
-    {% endwith %}
-
-    <form method="post" enctype="multipart/form-data">
-        <div class="upload-grid">
-            <div class="upload-card">
-                <label for="image1">🕒 Before (Date 1)</label>
-                <span class="hint">Earlier reference image</span>
-                <input type="file" name="image1" id="image1" accept=".jpg,.jpeg,.png,.tif,.tiff" required>
-            </div>
-            <div class="upload-card">
-                <label for="image2">🕒 After (Date 2)</label>
-                <span class="hint">Later comparison image</span>
-                <input type="file" name="image2" id="image2" accept=".jpg,.jpeg,.png,.tif,.tiff" required>
+    <!-- Header -->
+    <header>
+        <div class="brand-section">
+            <div class="brand-icon">🛰️</div>
+            <div class="brand-titles">
+                <h1>Satellite Image Change Detection</h1>
+                <p>Digital Image Processing (DIP) • Department of Artificial Intelligence</p>
             </div>
         </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" id="btn-load-sample" title="Load sample multi-temporal satellite images">
+                <span>⚡</span> Load Sample Data
+            </button>
+            <button class="btn btn-primary" id="btn-open-upload">
+                <span>📁</span> Upload Images
+            </button>
+            <div style="width: 1px; height: 24px; background: var(--border);"></div>
+            <button class="btn btn-outline" id="btn-export-mask" title="Download isolated binary change mask">
+                <span>💾</span> Mask
+            </button>
+            <button class="btn btn-success" id="btn-export-report" title="Download publication-ready 5-panel composite report">
+                <span>📊</span> Export Full Report
+            </button>
+        </div>
+    </header>
 
-        <button type="submit" class="btn-submit">🚀 Run Change Detection Pipeline</button>
-    </form>
+    <!-- App Body -->
+    <div class="app-body">
+        
+        <!-- Left Sidebar: Interactive Controls -->
+        <aside class="sidebar">
+            
+            <!-- Quick Presets -->
+            <div>
+                <div class="section-title">Workflow Presets</div>
+                <div class="presets-grid">
+                    <button class="preset-chip" data-preset="urban">🏗️ Urban Growth</button>
+                    <button class="preset-chip" data-preset="vegetation">🌿 Vegetation Loss</button>
+                    <button class="preset-chip" data-preset="sensitive">🔍 High Sensitivity</button>
+                    <button class="preset-chip" data-preset="clean">🧹 Clean / Denoiser</button>
+                </div>
+            </div>
 
-    <div class="footer-note">
-        Processing Pipeline: Registration (ECC) ➔ Differencing ➔ Otsu Thresholding ➔ Morphological Cleaning
+            <!-- Spatial Alignment / Registration -->
+            <div>
+                <div class="section-title">Stage 1: Spatial Registration</div>
+                <div class="control-group">
+                    <label class="toggle-row">
+                        <span>ECC Image Registration</span>
+                        <div class="switch">
+                            <input type="checkbox" id="reg-toggle">
+                            <span class="slider-switch"></span>
+                        </div>
+                    </label>
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Motion Model</span>
+                        </div>
+                        <select id="reg-mode">
+                            <option value="homography" selected>Homography (8 DOF - Recommended)</option>
+                            <option value="affine">Affine (6 DOF)</option>
+                            <option value="euclidean">Euclidean Rigid (3 DOF)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Differencing -->
+            <div>
+                <div class="section-title">Stage 2: Image Differencing</div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Difference Metric</span>
+                        </div>
+                        <select id="diff-mode">
+                            <option value="luminance" selected>Perceptual Luminance |I₂ - I₁|</option>
+                            <option value="euclidean">Euclidean L2 Norm (RGB Space)</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Heatmap Colormap</span>
+                        </div>
+                        <select id="colormap-select">
+                            <option value="inferno" selected>Inferno (Thermal High-Contrast)</option>
+                            <option value="viridis">Viridis (Perceptually Uniform)</option>
+                            <option value="jet">Jet (Classic Spectral)</option>
+                            <option value="turbo">Turbo (Enhanced Rainbow)</option>
+                            <option value="magma">Magma (Dark to Bright)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thresholding -->
+            <div>
+                <div class="section-title">Stage 3: Threshold Segmentation</div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Strategy</span>
+                        </div>
+                        <div class="radio-pill-group" id="thresh-strategy-group">
+                            <div class="radio-pill active" data-strategy="otsu">Otsu Auto</div>
+                            <div class="radio-pill" data-strategy="triangle">Triangle</div>
+                            <div class="radio-pill" data-strategy="fixed">Manual Fixed</div>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Threshold Cutoff</span>
+                            <span class="val-badge" id="thresh-val-display">0.36</span>
+                        </div>
+                        <input type="range" id="thresh-slider" min="0.01" max="0.95" step="0.01" value="0.36">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Morphological Noise Filtering -->
+            <div>
+                <div class="section-title">Stage 4: Post-Processing & Morphology</div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Min Blob Area (Filter Noise)</span>
+                            <span class="val-badge" id="blob-val-display">25 px</span>
+                        </div>
+                        <input type="range" id="blob-slider" min="0" max="300" step="5" value="25">
+                    </div>
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Structuring Kernel</span>
+                        </div>
+                        <select id="kernel-size">
+                            <option value="3" selected>3 × 3 Elliptical</option>
+                            <option value="5">5 × 5 Elliptical</option>
+                            <option value="7">7 × 7 Elliptical</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Morphological Operation</span>
+                        </div>
+                        <select id="morph-op">
+                            <option value="open_close" selected>Opening + Closing (Clean & Fuse)</option>
+                            <option value="open">Opening Only (Remove Speckles)</option>
+                            <option value="close">Closing Only (Fill Voids)</option>
+                            <option value="none">None (Raw Binary)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overlay Customization -->
+            <div>
+                <div class="section-title">Overlay Customization</div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Highlight Color</span>
+                        </div>
+                        <select id="overlay-color">
+                            <option value="sage" selected>Sage Green (#5D7B6F)</option>
+                            <option value="cream">Warm Cream (#EAE7D6)</option>
+                            <option value="red">Bright Red (#FF3344)</option>
+                            <option value="green">Neon Green (#00E676)</option>
+                            <option value="cyan">Electric Cyan (#00E5FF)</option>
+                            <option value="yellow">Vivid Yellow (#FFEA00)</option>
+                            <option value="magenta">Magenta / Pink (#FF0080)</option>
+                            <option value="orange">Safety Orange (#FF9100)</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-item-header">
+                            <span>Overlay Opacity (Alpha)</span>
+                            <span class="val-badge" id="alpha-val-display">55%</span>
+                        </div>
+                        <input type="range" id="alpha-slider" min="0" max="100" step="5" value="55">
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Right Main View: Visualizer & Analytics -->
+        <main class="main-content">
+            
+            <!-- View Mode Switcher & Pipeline Status -->
+            <div class="view-bar">
+                <div class="tab-group">
+                    <button class="tab-btn active" data-view="split">
+                        <span>↔️</span> Split Curtain
+                    </button>
+                    <button class="tab-btn" data-view="grid">
+                        <span>▦</span> 4-Panel Grid
+                    </button>
+                    <button class="tab-btn" data-view="overlay">
+                        <span>🎯</span> Change Overlay
+                    </button>
+                    <button class="tab-btn" data-view="blink">
+                        <span>👁️</span> Blink Comparator
+                    </button>
+                </div>
+                <div class="pipeline-status">
+                    <span class="status-dot" id="status-indicator"></span>
+                    <span id="status-text">Pipeline Ready • 62 ms</span>
+                </div>
+            </div>
+
+            <!-- Analytics Metric Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card" style="--card-accent: #5D7B6F;">
+                    <div class="metric-label">Changed Surface Area</div>
+                    <div class="metric-value">
+                        <span id="metric-change-pct">-- %</span>
+                    </div>
+                    <div class="metric-sub" id="metric-change-pixels">-- pixels</div>
+                </div>
+
+                <div class="metric-card" style="--card-accent: #7E9F92;">
+                    <div class="metric-label">Unchanged Background</div>
+                    <div class="metric-value">
+                        <span id="metric-unchanged-pct">-- %</span>
+                    </div>
+                    <div class="metric-sub" id="metric-unchanged-pixels">-- pixels</div>
+                </div>
+
+                <div class="metric-card" style="--card-accent: #A4C3A2;">
+                    <div class="metric-label">Discrete Change Clusters</div>
+                    <div class="metric-value">
+                        <span id="metric-blob-count">--</span>
+                    </div>
+                    <div class="metric-sub" id="metric-blob-mean">Mean size: -- px</div>
+                </div>
+
+                <div class="metric-card" style="--card-accent: #465E54;">
+                    <div class="metric-label">Resolution & Latency</div>
+                    <div class="metric-value">
+                        <span id="metric-resolution">-- × --</span>
+                    </div>
+                    <div class="metric-sub" id="metric-latency">Compute: -- ms</div>
+                </div>
+            </div>
+
+            <!-- Visualizer Container -->
+            <div class="viewer-box">
+
+                <!-- 1. Split-Curtain Slider View -->
+                <div class="split-curtain-container" id="view-split">
+                    <img class="split-image-before" id="split-img-before" src="" alt="Date 1 Before">
+                    <img class="split-image-after" id="split-img-after" src="" alt="Date 2 After">
+                    <div class="split-divider" id="split-divider">
+                        <div class="split-handle">◄ ►</div>
+                    </div>
+                    <div class="split-label split-label-left">Date 1 (Before)</div>
+                    <div class="split-label split-label-right" id="split-right-label">Date 2 (After)</div>
+                </div>
+
+                <!-- 2. 4-Grid Synchronized Inspection View -->
+                <div class="grid-view-container" id="view-grid" style="display: none;">
+                    <div class="grid-panel">
+                        <div class="grid-panel-header">
+                            <span>Date 1 (Before Acquisition)</span>
+                            <span class="val-badge">Reference</span>
+                        </div>
+                        <img id="grid-img1" src="" alt="Date 1">
+                    </div>
+                    <div class="grid-panel">
+                        <div class="grid-panel-header">
+                            <span>Date 2 (After Acquisition)</span>
+                            <span class="val-badge" id="grid-reg-badge">Aligned</span>
+                        </div>
+                        <img id="grid-img2" src="" alt="Date 2">
+                    </div>
+                    <div class="grid-panel">
+                        <div class="grid-panel-header">
+                            <span>Difference Intensity Heatmap</span>
+                            <span class="val-badge">Heatmap</span>
+                        </div>
+                        <img id="grid-diff" src="" alt="Difference Heatmap">
+                    </div>
+                    <div class="grid-panel">
+                        <div class="grid-panel-header">
+                            <span>Cleaned Binary Change Mask</span>
+                            <span class="val-badge" id="grid-mask-badge">Mask</span>
+                        </div>
+                        <img id="grid-mask" src="" alt="Binary Change Mask">
+                    </div>
+                </div>
+
+                <!-- 3. Change Overlay View -->
+                <div class="single-view-container" id="view-overlay" style="display: none;">
+                    <img id="single-overlay-img" src="" alt="Change Overlay">
+                </div>
+
+                <!-- 4. Blink / Flicker View -->
+                <div class="single-view-container" id="view-blink" style="display: none;">
+                    <div class="blink-indicator" id="blink-badge">Date 1 (Before)</div>
+                    <img id="single-blink-img" src="" alt="Blink View">
+                    <div style="position: absolute; bottom: 12px; right: 12px; display: flex; gap: 8px; z-index: 15;">
+                        <button class="btn btn-sm btn-outline" id="btn-toggle-blink">⏸️ Pause</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Difference Intensity Histogram Chart -->
+            <div class="histogram-container">
+                <div class="section-title" style="margin-bottom: 0;">
+                    <span>Difference Intensity Histogram & Otsu Threshold Cutoff</span>
+                    <span class="val-badge" id="hist-cutoff-badge">Cutoff: --</span>
+                </div>
+                <div class="hist-canvas-wrap">
+                    <canvas id="hist-canvas"></canvas>
+                </div>
+            </div>
+
+        </main>
     </div>
-</div>
 
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="upload-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Upload Multi-Temporal Satellite Images</h3>
+                <button class="modal-close" id="btn-close-modal">&times;</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">
+                Select or drag paired satellite images covering the same area from two different dates (JPG, PNG, or TIFF).
+            </p>
+            <div class="upload-dropzone-grid">
+                <label class="dropzone" id="dz-1">
+                    <span style="font-size: 24px;">📅</span>
+                    <strong style="font-size: 13px;">Date 1 (Before)</strong>
+                    <span style="font-size: 11px; color: var(--text-muted);">Click to choose file</span>
+                    <img class="dropzone-preview" id="preview-1" alt="Preview 1">
+                    <input type="file" id="file-input-1" accept="image/*">
+                </label>
+
+                <label class="dropzone" id="dz-2">
+                    <span style="font-size: 24px;">🛰️</span>
+                    <strong style="font-size: 13px;">Date 2 (After)</strong>
+                    <span style="font-size: 11px; color: var(--text-muted);">Click to choose file</span>
+                    <img class="dropzone-preview" id="preview-2" alt="Preview 2">
+                    <input type="file" id="file-input-2" accept="image/*">
+                </label>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
+                <button class="btn btn-outline" id="btn-cancel-upload">Cancel</button>
+                <button class="btn btn-primary" id="btn-submit-upload" disabled>
+                    <span>⚡</span> Process Satellite Pair
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // State variables
+        let appState = {
+            sessionId: 'sample',
+            useSample: true,
+            selectedView: 'split',
+            threshStrategy: 'otsu',
+            currentImages: {},
+            currentMetrics: {},
+            currentHistogram: {},
+            uploadedFile1: null,
+            uploadedFile2: null,
+            blinkInterval: null,
+            blinkState: 0,
+            blinkPaused: false,
+            isDraggingSplit: false
+        };
+
+        // Chart.js instance
+        let histChart = null;
+
+        // Debounce helper for slider dragging
+        let debounceTimer = null;
+        function debounceProcess(delay = 180) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                runPipeline();
+            }, delay);
+        }
+
+        // Initialize Histogram Chart
+        function initHistogramChart() {
+            const ctx = document.getElementById('hist-canvas').getContext('2d');
+            histChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Pixel Count',
+                        data: [],
+                        backgroundColor: '#5D7B6F',
+                        borderRadius: 2,
+                        barPercentage: 1.0,
+                        categoryPercentage: 1.0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => `Difference Intensity: ${items[0].label}`,
+                                label: (item) => `Pixels: ${item.formattedValue}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(93, 123, 111, 0.15)' },
+                            ticks: {
+                                color: '#5D7B6F',
+                                maxTicksLimit: 12,
+                                font: { size: 10, weight: 600 }
+                            }
+                        },
+                        y: {
+                            grid: { color: 'rgba(93, 123, 111, 0.15)' },
+                            ticks: {
+                                color: '#5D7B6F',
+                                font: { size: 10, weight: 600 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update Histogram Data & Color
+        function updateHistogram(histData, activeThreshVal) {
+            if (!histChart || !histData || !histData.bin_centers) return;
+
+            const cutoff = histData.active_threshold || (activeThreshVal * 255);
+            document.getElementById('hist-cutoff-badge').textContent = `Cutoff: ${Math.round(cutoff)} / 255`;
+
+            // Color bars before cutoff Sage, after cutoff Red highlight
+            const colors = histData.bin_centers.map(center => {
+                return center >= cutoff ? 'rgba(192, 74, 58, 0.85)' : 'rgba(93, 123, 111, 0.75)';
+            });
+
+            histChart.data.labels = histData.bin_centers.map(v => Math.round(v));
+            histChart.data.datasets[0].data = histData.counts;
+            histChart.data.datasets[0].backgroundColor = colors;
+            histChart.update('none');
+        }
+
+        // Gather all UI parameters
+        function collectParams() {
+            return {
+                use_sample: appState.useSample ? 'true' : 'false',
+                session_id: appState.sessionId,
+                register: document.getElementById('reg-toggle').checked ? 'true' : 'false',
+                reg_mode: document.getElementById('reg-mode').value,
+                diff_mode: document.getElementById('diff-mode').value,
+                colormap: document.getElementById('colormap-select').value,
+                thresh_method: appState.threshStrategy,
+                thresh_value: parseFloat(document.getElementById('thresh-slider').value),
+                min_blob: parseInt(document.getElementById('blob-slider').value, 10),
+                kernel_size: parseInt(document.getElementById('kernel-size').value, 10),
+                morph_op: document.getElementById('morph-op').value,
+                overlay_color: document.getElementById('overlay-color').value,
+                overlay_alpha: parseFloat(document.getElementById('alpha-slider').value) / 100.0
+            };
+        }
+
+        // Execute API pipeline call
+        async function runPipeline() {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            statusText.textContent = 'Processing DIP Pipeline...';
+            statusIndicator.style.background = '#B08238';
+            statusIndicator.style.boxShadow = '0 0 8px rgba(176, 130, 56, 0.6)';
+
+            const params = collectParams();
+            const formData = new FormData();
+            for (const [k, v] of Object.entries(params)) {
+                formData.append(k, v);
+            }
+
+            // Include files if uploading new pair
+            if (appState.uploadedFile1 && appState.uploadedFile2) {
+                formData.append('image1', appState.uploadedFile1);
+                formData.append('image2', appState.uploadedFile2);
+            }
+
+            try {
+                const res = await fetch('/api/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (!data.success) {
+                    alert('Error: ' + (data.error || 'Failed to process images'));
+                    statusText.textContent = 'Pipeline Error';
+                    statusIndicator.style.background = '#C04A3A';
+                    statusIndicator.style.boxShadow = '0 0 8px rgba(192, 74, 58, 0.6)';
+                    return;
+                }
+
+                // Clear one-time file upload references once stored in server session
+                if (data.session_id) {
+                    appState.sessionId = data.session_id;
+                    appState.uploadedFile1 = null;
+                    appState.uploadedFile2 = null;
+                }
+
+                appState.currentImages = data.images;
+                appState.currentMetrics = data.metrics;
+                appState.currentHistogram = data.histogram;
+
+                // Sync threshold slider if Otsu or Triangle computed it
+                if (appState.threshStrategy !== 'fixed' && data.metrics.active_threshold !== undefined) {
+                    document.getElementById('thresh-slider').value = data.metrics.active_threshold;
+                    document.getElementById('thresh-val-display').textContent = data.metrics.active_threshold.toFixed(2);
+                }
+
+                // Render updates
+                renderVisuals(data.images);
+                renderMetrics(data.metrics);
+                updateHistogram(data.histogram, data.metrics.active_threshold);
+
+                statusText.textContent = `Pipeline Ready • ${data.metrics.processing_time_ms} ms (${data.metrics.registration_status})`;
+                statusIndicator.style.background = '#5D7B6F';
+                statusIndicator.style.boxShadow = '0 0 8px rgba(93, 123, 111, 0.7)';
+
+            } catch (err) {
+                console.error(err);
+                statusText.textContent = 'Network or Server Error';
+                statusIndicator.style.background = '#ef4444';
+            }
+        }
+
+        // Render images to views
+        function renderVisuals(images) {
+            // Split-Curtain
+            document.getElementById('split-img-before').src = images.img1;
+            document.getElementById('split-img-after').src = images.img2;
+
+            // 4-Grid
+            document.getElementById('grid-img1').src = images.img1;
+            document.getElementById('grid-img2').src = images.img2;
+            document.getElementById('grid-diff').src = images.diff_heatmap;
+            document.getElementById('grid-mask').src = images.mask;
+
+            // Overlay View
+            document.getElementById('single-overlay-img').src = images.overlay;
+
+            // Blink View
+            document.getElementById('single-blink-img').src = images.img1;
+        }
+
+        // Render metrics cards
+        function renderMetrics(m) {
+            document.getElementById('metric-change-pct').textContent = `${m.changed_percentage}%`;
+            document.getElementById('metric-change-pixels').textContent = `${m.changed_pixels.toLocaleString()} pixels`;
+
+            document.getElementById('metric-unchanged-pct').textContent = `${m.unchanged_percentage}%`;
+            document.getElementById('metric-unchanged-pixels').textContent = `${m.unchanged_pixels.toLocaleString()} pixels`;
+
+            document.getElementById('metric-blob-count').textContent = m.blob_count;
+            document.getElementById('metric-blob-mean').textContent = `Mean area: ${m.mean_blob_area} px | Max: ${m.max_blob_area} px`;
+
+            document.getElementById('metric-resolution').textContent = `${m.width} × ${m.height}`;
+            document.getElementById('metric-latency').textContent = `Compute: ${m.processing_time_ms} ms`;
+
+            // Grid registration badge
+            document.getElementById('grid-reg-badge').textContent = m.registration_applied ? 'ECC Aligned' : 'Raw';
+            document.getElementById('grid-mask-badge').textContent = `${m.changed_percentage}% Changed`;
+        }
+
+        // View Tabs Switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const viewSplit = document.getElementById('view-split');
+        const viewGrid = document.getElementById('view-grid');
+        const viewOverlay = document.getElementById('view-overlay');
+        const viewBlink = document.getElementById('view-blink');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const view = btn.dataset.view;
+                appState.selectedView = view;
+
+                viewSplit.style.display = (view === 'split') ? 'block' : 'none';
+                viewGrid.style.display = (view === 'grid') ? 'grid' : 'none';
+                viewOverlay.style.display = (view === 'overlay') ? 'block' : 'none';
+                viewBlink.style.display = (view === 'blink') ? 'block' : 'none';
+
+                if (view === 'blink') {
+                    startBlinkLoop();
+                } else {
+                    stopBlinkLoop();
+                }
+            });
+        });
+
+        // Split-Curtain Interactive Dragging
+        const splitBox = document.getElementById('view-split');
+        const splitAfter = document.getElementById('split-img-after');
+        const splitDivider = document.getElementById('split-divider');
+
+        function setSplitPosition(clientX) {
+            const rect = splitBox.getBoundingClientRect();
+            let x = clientX - rect.left;
+            x = Math.max(0, Math.min(x, rect.width));
+            const pct = (x / rect.width) * 100;
+            splitAfter.style.clipPath = `polygon(${pct}% 0, 100% 0, 100% 100%, ${pct}% 100%)`;
+            splitDivider.style.left = `${pct}%`;
+        }
+
+        splitBox.addEventListener('mousedown', (e) => {
+            appState.isDraggingSplit = true;
+            setSplitPosition(e.clientX);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (appState.isDraggingSplit) {
+                setSplitPosition(e.clientX);
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            appState.isDraggingSplit = false;
+        });
+
+        splitBox.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                setSplitPosition(e.touches[0].clientX);
+            }
+        }, { passive: true });
+
+        splitBox.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                if (e.cancelable) e.preventDefault();
+                setSplitPosition(e.touches[0].clientX);
+            }
+        }, { passive: false });
+
+        // Blink Comparator Loop
+        function startBlinkLoop() {
+            stopBlinkLoop();
+            const blinkImg = document.getElementById('single-blink-img');
+            const blinkBadge = document.getElementById('blink-badge');
+            appState.blinkState = 0;
+
+            appState.blinkInterval = setInterval(() => {
+                if (appState.blinkPaused || !appState.currentImages.img1) return;
+                appState.blinkState = (appState.blinkState === 0) ? 1 : 0;
+                if (appState.blinkState === 0) {
+                    blinkImg.src = appState.currentImages.img1;
+                    blinkBadge.textContent = 'Date 1 (Before)';
+                } else {
+                    blinkImg.src = appState.currentImages.img2;
+                    blinkBadge.textContent = 'Date 2 (After)';
+                }
+            }, 600);
+        }
+
+        function stopBlinkLoop() {
+            if (appState.blinkInterval) {
+                clearInterval(appState.blinkInterval);
+                appState.blinkInterval = null;
+            }
+        }
+
+        document.getElementById('btn-toggle-blink').addEventListener('click', (e) => {
+            appState.blinkPaused = !appState.blinkPaused;
+            e.target.textContent = appState.blinkPaused ? '▶️ Play' : '⏸️ Pause';
+        });
+
+        // Threshold Strategy Radio Pills
+        const threshPills = document.querySelectorAll('#thresh-strategy-group .radio-pill');
+        threshPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                threshPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                appState.threshStrategy = pill.dataset.strategy;
+                runPipeline();
+            });
+        });
+
+        // Slider Listeners with Badges
+        const threshSlider = document.getElementById('thresh-slider');
+        threshSlider.addEventListener('input', (e) => {
+            document.getElementById('thresh-val-display').textContent = parseFloat(e.target.value).toFixed(2);
+            // Switch to fixed strategy when manually sliding
+            threshPills.forEach(p => p.classList.remove('active'));
+            document.querySelector('#thresh-strategy-group [data-strategy="fixed"]').classList.add('active');
+            appState.threshStrategy = 'fixed';
+            debounceProcess();
+        });
+
+        const blobSlider = document.getElementById('blob-slider');
+        blobSlider.addEventListener('input', (e) => {
+            document.getElementById('blob-val-display').textContent = `${e.target.value} px`;
+            debounceProcess();
+        });
+
+        const alphaSlider = document.getElementById('alpha-slider');
+        alphaSlider.addEventListener('input', (e) => {
+            document.getElementById('alpha-val-display').textContent = `${e.target.value}%`;
+            debounceProcess();
+        });
+
+        // Dropdown & Checkbox Listeners
+        ['reg-toggle', 'reg-mode', 'diff-mode', 'colormap-select', 'kernel-size', 'morph-op', 'overlay-color'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                runPipeline();
+            });
+        });
+
+        // Workflow Presets
+        document.querySelectorAll('.preset-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const preset = chip.dataset.preset;
+                if (preset === 'urban') {
+                    // Urban growth: Otsu, medium blob filter, red overlay
+                    setStrategy('otsu');
+                    blobSlider.value = 35;
+                    document.getElementById('blob-val-display').textContent = '35 px';
+                    document.getElementById('overlay-color').value = 'red';
+                    document.getElementById('morph-op').value = 'open_close';
+                } else if (preset === 'vegetation') {
+                    // Vegetation loss: Green/yellow overlay, larger filter
+                    setStrategy('otsu');
+                    blobSlider.value = 50;
+                    document.getElementById('blob-val-display').textContent = '50 px';
+                    document.getElementById('overlay-color').value = 'green';
+                    document.getElementById('colormap-select').value = 'viridis';
+                } else if (preset === 'sensitive') {
+                    // High sensitivity: Low fixed threshold, minimal blob filter
+                    setStrategy('fixed');
+                    threshSlider.value = 0.22;
+                    document.getElementById('thresh-val-display').textContent = '0.22';
+                    blobSlider.value = 10;
+                    document.getElementById('blob-val-display').textContent = '10 px';
+                    document.getElementById('morph-op').value = 'open';
+                } else if (preset === 'clean') {
+                    // Clean / Denoiser: Large blob filter, 5x5 kernel
+                    setStrategy('otsu');
+                    blobSlider.value = 75;
+                    document.getElementById('blob-val-display').textContent = '75 px';
+                    document.getElementById('kernel-size').value = '5';
+                    document.getElementById('morph-op').value = 'open_close';
+                }
+                runPipeline();
+            });
+        });
+
+        function setStrategy(strategy) {
+            appState.threshStrategy = strategy;
+            threshPills.forEach(p => {
+                p.classList.toggle('active', p.dataset.strategy === strategy);
+            });
+        }
+
+        // Header Actions: Load Sample
+        document.getElementById('btn-load-sample').addEventListener('click', () => {
+            appState.useSample = true;
+            appState.sessionId = 'sample';
+            appState.uploadedFile1 = null;
+            appState.uploadedFile2 = null;
+            runPipeline();
+        });
+
+        // Header Actions: Exports
+        document.getElementById('btn-export-mask').addEventListener('click', () => {
+            downloadExport('mask');
+        });
+
+        document.getElementById('btn-export-report').addEventListener('click', () => {
+            downloadExport('report');
+        });
+
+        function downloadExport(type) {
+            const params = collectParams();
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/api/export/${type}`;
+            form.target = '_blank';
+
+            for (const [k, v] of Object.entries(params)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = k;
+                input.value = v;
+                form.appendChild(input);
+            }
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
+        // Upload Modal Handlers
+        const uploadModal = document.getElementById('upload-modal');
+        const btnOpenUpload = document.getElementById('btn-open-upload');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnCancelUpload = document.getElementById('btn-cancel-upload');
+        const btnSubmitUpload = document.getElementById('btn-submit-upload');
+        const fileIn1 = document.getElementById('file-input-1');
+        const fileIn2 = document.getElementById('file-input-2');
+        const prev1 = document.getElementById('preview-1');
+        const prev2 = document.getElementById('preview-2');
+
+        btnOpenUpload.addEventListener('click', () => uploadModal.classList.add('open'));
+        btnCloseModal.addEventListener('click', () => uploadModal.classList.remove('open'));
+        btnCancelUpload.addEventListener('click', () => uploadModal.classList.remove('open'));
+
+        function handleFileSelection(file, previewEl, fileIndex) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewEl.src = e.target.result;
+                previewEl.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            if (fileIndex === 1) appState.uploadedFile1 = file;
+            if (fileIndex === 2) appState.uploadedFile2 = file;
+
+            btnSubmitUpload.disabled = !(appState.uploadedFile1 && appState.uploadedFile2);
+        }
+
+        fileIn1.addEventListener('change', (e) => handleFileSelection(e.target.files[0], prev1, 1));
+        fileIn2.addEventListener('change', (e) => handleFileSelection(e.target.files[0], prev2, 2));
+
+        btnSubmitUpload.addEventListener('click', () => {
+            appState.useSample = false;
+            uploadModal.classList.remove('open');
+            runPipeline();
+        });
+
+        // On Page Load: Initialize and Load Sample
+        window.addEventListener('DOMContentLoaded', () => {
+            initHistogramChart();
+            runPipeline();
+        });
+    </script>
 </body>
 </html>
